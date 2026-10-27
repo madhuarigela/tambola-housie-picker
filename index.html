@@ -15,25 +15,35 @@
 <p class="intro">Set each prize's name, winning pattern, cash amount, and scheduled time. Add as many prizes as your game needs. Amounts are fixed in rupees; the app checks that the total fits your prize pool.</p>
 <div class="budget-row"><label>Prize pool available<strong id="availablePool" style="display:block;font-size:20px;color:var(--ink);margin-top:4px">₹1,000</strong></label><label>Prize total<strong id="prizeTotal" style="display:block;font-size:20px;color:var(--ink);margin-top:4px">₹0</strong></label><label>Balance<strong id="prizeBalance" style="display:block;font-size:20px;color:var(--ink);margin-top:4px">₹1,000</strong></label></div>
 <div id="prizeEditor" class="prize-editor"></div>
-<div class="field-grid" style="margin-top:14px"><div class="field"><label for="customName">Prize name</label><input id="customName" type="text" placeholder="e.g. Four Corners"></div><div class="field"><label for="customCondition">Winning pattern</label><input id="customCondition" type="text" placeholder="e.g. 4 corner numbers"></div><div class="field"><label for="customAmount">Prize amount (₹)</label><input id="customAmount" type="number" min="0" step="1" placeholder="e.g. 100"></div><div class="field"><label for="customTime">Prize time (optional)</label><input id="customTime" type="time"></div><div class="field" style="align-self:end"><button class="btn primary" id="addPrize" type="button" style="width:100%;border-radius:12px">+ Add prize</button></div></div>
+<div class="toggles" id="quickAddPrizes"><button class="btn secondary" type="button" data-prize="Early 5">+ Another Early 5</button><button class="btn secondary" type="button" data-prize="Line">+ Another Line</button><button class="btn secondary" type="button" data-prize="Full House">+ Another Full House</button><button class="btn secondary" type="button" data-prize="custom">+ Other prize</button></div>
+<div class="field-grid" style="margin-top:14px"><div class="field"><label for="customName">Prize name</label><input id="customName" type="text" placeholder="e.g. Four Corners"></div><div class="field"><label for="customCondition">Winning pattern</label><input id="customCondition" type="text" placeholder="e.g. 4 corner numbers"></div><div class="field"><label for="customAmount">Prize amount (₹)</label><input id="customAmount" type="number" min="0" step="1" placeholder="e.g. 100"></div><div class="field" style="align-self:end"><button class="btn primary" id="addPrize" type="button" style="width:100%;border-radius:12px">+ Add prize</button></div></div>
 <p class="note" id="prizeNote"></p></section><p class="footer">Made for your game night · Prize amounts update automatically</p>
 </main><script>
 let max=90,calls=[];const $=id=>document.getElementById(id);function money(n){return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(n)}
 function render(){max=+$('range').value;$('board').innerHTML='';for(let i=1;i<=max;i++){let d=document.createElement('div');d.className='n'+(calls.includes(i)?' called':'')+(calls.at(-1)===i?' latest':'');d.textContent=i;$('board').append(d)}let cur=calls.at(-1);$('current').textContent=cur??'—';$('status').textContent=cur===undefined?'Ready when you are':'Number '+cur+' called';$('hint').textContent=cur===undefined?'Pick a number to start your game.':'Mark '+cur+' on your tickets. Good luck!';$('count').textContent=calls.length+' / '+max;$('remaining').textContent=max-calls.length;$('historyCount').textContent=calls.length+' calls';$('history').innerHTML='';if(!calls.length){$('history').innerHTML='<span class="note">Your called numbers appear here.</span>'}else [...calls].reverse().forEach((n,i)=>{let d=document.createElement('span');d.className='history-item'+(i===0?' latest':'');d.textContent=n;$('history').append(d)});$('pick').disabled=calls.length>=max;$('undo').disabled=!calls.length;calc()}
 let picking=false;function pick(){let left=Array.from({length:max},(_,i)=>i+1).filter(n=>!calls.includes(n));if(!left.length||picking)return;picking=true;$('pick').disabled=true;$('coinStage').classList.remove('drawing');document.querySelector('.hero').classList.add('drawing');void $('coinStage').offsetWidth;$('coinStage').classList.add('drawing');setTimeout(()=>{calls.push(left[Math.floor(Math.random()*left.length)]);render();$('current').classList.remove('pop');void $('current').offsetWidth;$('current').classList.add('pop');$('coinStage').classList.remove('drawing');document.querySelector('.hero').classList.remove('drawing');picking=false},1150)}
 const defaultPrizes=[
-{name:'Early 5',condition:'First 5 numbers on a ticket',amount:50,time:'',enabled:true},
-{name:'First Line',condition:'Complete top row',amount:100,time:'',enabled:true},
-{name:'Second Line',condition:'Complete middle row',amount:100,time:'',enabled:true},
-{name:'Third Line',condition:'Complete bottom row',amount:100,time:'',enabled:true},
-{name:'Full House',condition:'All 15 numbers on a ticket',amount:150,time:'',enabled:true}
+{name:'Early 5',condition:'First 5 numbers on a ticket',amount:5,enabled:true},
+{name:'First Line',condition:'Complete top row',amount:10,enabled:true},
+{name:'Second Line',condition:'Complete middle row',amount:10,enabled:true},
+{name:'Third Line',condition:'Complete bottom row',amount:10,enabled:true},
+{name:'Full House',condition:'All 15 numbers on a ticket',amount:15,enabled:true}
 ];
 let prizesData=defaultPrizes.map(p=>({...p,id:crypto.randomUUID()}));
+function addRepeatPrize(kind){
+ let name,condition,amount=0;
+ if(kind==='Early 5'){name='Second Early 5';condition='First 5 numbers on a ticket';}
+ else if(kind==='Line'){const n=prizesData.filter(p=>/line/i.test(p.name)).length+1;name=['First','Second','Third','Fourth','Fifth','Sixth'][n-1]+' Line';if(n>6)name='Line Prize '+n;condition='Complete any one row on a ticket';}
+ else if(kind==='Full House'){const n=prizesData.filter(p=>/house/i.test(p.name)).length+1;name=n===2?'Second Full House':'Full House '+n;condition='All 15 numbers on a ticket';}
+ else {name='Custom Prize';condition='Describe the winning pattern';}
+ prizesData.push({id:crypto.randomUUID(),name,condition,amount,enabled:true});renderPrizeEditor();calc();
+ const rows=$('prizeEditor').querySelectorAll('.prize-edit-row');const last=rows[rows.length-1];if(last){const inputs=last.querySelectorAll('input');if(inputs[2]){inputs[2].focus();inputs[2].select();}}
+}
 function renderPrizeEditor(){
  $('prizeEditor').innerHTML='';
  prizesData.forEach((p,i)=>{
   const row=document.createElement('div');row.className='prize-edit-row';
-  const fields=[['Prize name','name','text'],['Winning pattern','condition','text'],['Amount (₹)','amount','number'],['Time (optional)','time','time']];
+  const fields=[['Prize name','name','text'],['Winning pattern','condition','text'],['Amount (₹)','amount','number']];
   fields.forEach(([labelText,key,type])=>{
    const box=document.createElement('div');box.className='field';
    const label=document.createElement('label');label.textContent=labelText;
@@ -63,11 +73,10 @@ function calc(){
   const name=document.createElement('div');name.className='name';name.textContent=p.name||'Untitled prize';
   const condition=document.createElement('div');condition.className='note';condition.style.margin='5px 0 0';condition.textContent=p.condition||'No pattern specified';
   const amount=document.createElement('strong');amount.textContent=money(Math.max(0,Number(p.amount)||0));
-  const time=document.createElement('div');time.className='note';time.style.margin='5px 0 0';time.textContent=p.time?'Target time: '+p.time:'No time set';
-  card.append(name,amount,condition,time);$('prizes').append(card);
+  card.append(name,amount,condition);$('prizes').append(card);
  });
  const note=$('prizeNote');note.className='note '+(balance<0?'warn':'good');
- note.textContent=balance<0?'Warning: active prizes exceed the available pool by '+money(Math.abs(balance))+'. Reduce prize amounts or disable a prize.':balance===0?'All available prize money has been allocated.':money(balance)+' remains unallocated. Add or edit prizes as needed. Prize times are planning reminders; they do not automatically call numbers or decide winners.';
+ note.textContent=balance<0?'Warning: active prizes exceed the available pool by '+money(Math.abs(balance))+'. Reduce prize amounts or disable a prize.':balance===0?'All available prize money has been allocated.':money(balance)+' remains unallocated. Add or edit prizes as needed. Add repeat prizes like Second Early 5, Fourth Line, or Second Full House whenever needed.';
 }
-$('pick').onclick=pick;$('undo').onclick=()=>{calls.pop();render()};$('reset').onclick=()=>{if(calls.length&&!confirm('Start a new game and clear all called numbers?'))return;calls=[];render()};$('range').onchange=()=>{calls=[];render()};['price','tickets','reserve'].forEach(id=>$(id).addEventListener('input',calc));$('addPrize').addEventListener('click',()=>{let name=$('customName').value.trim(),condition=$('customCondition').value.trim(),amount=Number($('customAmount').value),time=$('customTime').value;if(!name){$('customName').focus();return}if(!condition){$('customCondition').focus();return}if(!Number.isFinite(amount)||amount<0||$('customAmount').value===''){$('customAmount').focus();return}prizesData.push({id:crypto.randomUUID(),name,condition,amount,time,enabled:true});$('customName').value='';$('customCondition').value='';$('customAmount').value='';$('customTime').value='';renderPrizeEditor();calc()});renderPrizeEditor();render();
+$('pick').onclick=pick;$('undo').onclick=()=>{calls.pop();render()};$('reset').onclick=()=>{if(calls.length&&!confirm('Start a new game and clear all called numbers?'))return;calls=[];render()};$('range').onchange=()=>{calls=[];render()};['price','tickets','reserve'].forEach(id=>$(id).addEventListener('input',calc));$('quickAddPrizes').addEventListener('click',e=>{const b=e.target.closest('button[data-prize]');if(b)addRepeatPrize(b.dataset.prize)});$('addPrize').addEventListener('click',()=>{let name=$('customName').value.trim(),condition=$('customCondition').value.trim(),amount=Number($('customAmount').value);if(!name){$('customName').focus();return}if(!condition){$('customCondition').focus();return}if(!Number.isFinite(amount)||amount<0||$('customAmount').value===''){$('customAmount').focus();return}prizesData.push({id:crypto.randomUUID(),name,condition,amount,enabled:true});$('customName').value='';$('customCondition').value='';$('customAmount').value='';renderPrizeEditor();calc()});renderPrizeEditor();render();
 </script></body></html>
