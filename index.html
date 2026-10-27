@@ -23,20 +23,28 @@ let max=90,calls=[];const $=id=>document.getElementById(id);function money(n){re
 function render(){max=+$('range').value;$('board').innerHTML='';for(let i=1;i<=max;i++){let d=document.createElement('div');d.className='n'+(calls.includes(i)?' called':'')+(calls.at(-1)===i?' latest':'');d.textContent=i;$('board').append(d)}let cur=calls.at(-1);$('current').textContent=cur??'—';$('status').textContent=cur===undefined?'Ready when you are':'Number '+cur+' called';$('hint').textContent=cur===undefined?'Pick a number to start your game.':'Mark '+cur+' on your tickets. Good luck!';$('count').textContent=calls.length+' / '+max;$('remaining').textContent=max-calls.length;$('historyCount').textContent=calls.length+' calls';$('history').innerHTML='';if(!calls.length){$('history').innerHTML='<span class="note">Your called numbers appear here.</span>'}else [...calls].reverse().forEach((n,i)=>{let d=document.createElement('span');d.className='history-item'+(i===0?' latest':'');d.textContent=n;$('history').append(d)});$('pick').disabled=calls.length>=max;$('undo').disabled=!calls.length;calc()}
 let picking=false;function pick(){let left=Array.from({length:max},(_,i)=>i+1).filter(n=>!calls.includes(n));if(!left.length||picking)return;picking=true;$('pick').disabled=true;$('coinStage').classList.remove('drawing');document.querySelector('.hero').classList.add('drawing');void $('coinStage').offsetWidth;$('coinStage').classList.add('drawing');setTimeout(()=>{calls.push(left[Math.floor(Math.random()*left.length)]);render();$('current').classList.remove('pop');void $('current').offsetWidth;$('current').classList.add('pop');$('coinStage').classList.remove('drawing');document.querySelector('.hero').classList.remove('drawing');picking=false},1150)}
 const defaultPrizes=[
-{name:'Early 5',condition:'First 5 numbers on a ticket',amount:5,enabled:true},
-{name:'First Line',condition:'Complete top row',amount:10,enabled:true},
-{name:'Second Line',condition:'Complete middle row',amount:10,enabled:true},
-{name:'Third Line',condition:'Complete bottom row',amount:10,enabled:true},
-{name:'Full House',condition:'All 15 numbers on a ticket',amount:15,enabled:true}
+{name:'Early 5',condition:'First 5 numbers on a ticket',amount:5,enabled:true,optional:false},
+{name:'Second Early 5',condition:'First 5 numbers on a ticket',amount:0,enabled:false,optional:true},
+{name:'Third Early 5',condition:'First 5 numbers on a ticket',amount:0,enabled:false,optional:true},
+{name:'First Line',condition:'Complete top row',amount:10,enabled:true,optional:false},
+{name:'Second Line',condition:'Complete middle row',amount:10,enabled:true,optional:false},
+{name:'Third Line',condition:'Complete bottom row',amount:10,enabled:true,optional:false},
+{name:'Fourth Line',condition:'Complete a row on a ticket',amount:0,enabled:false,optional:true},
+{name:'Fifth Line',condition:'Complete a row on a ticket',amount:0,enabled:false,optional:true},
+{name:'Full House',condition:'All 15 numbers on a ticket',amount:15,enabled:true,optional:false},
+{name:'Second Full House',condition:'All 15 numbers on a ticket',amount:0,enabled:false,optional:true},
+{name:'Third Full House',condition:'All 15 numbers on a ticket',amount:0,enabled:false,optional:true}
 ];
 let prizesData=defaultPrizes.map(p=>({...p,id:crypto.randomUUID()}));
 function addRepeatPrize(kind){
  let name,condition,amount=0;
- if(kind==='Early 5'){name='Second Early 5';condition='First 5 numbers on a ticket';}
- else if(kind==='Line'){const n=prizesData.filter(p=>/line/i.test(p.name)).length+1;name=['First','Second','Third','Fourth','Fifth','Sixth'][n-1]+' Line';if(n>6)name='Line Prize '+n;condition='Complete any one row on a ticket';}
- else if(kind==='Full House'){const n=prizesData.filter(p=>/house/i.test(p.name)).length+1;name=n===2?'Second Full House':'Full House '+n;condition='All 15 numbers on a ticket';}
+ if(kind==='Early 5'){const n=prizesData.filter(p=>/early 5/i.test(p.name)).length+1;name=n===2?'Second Early 5':n===3?'Third Early 5':'Early 5 '+n;condition='First 5 numbers on a ticket';}
+ else if(kind==='Line'){const n=prizesData.filter(p=>/line/i.test(p.name)).length+1;name=['First Line','Second Line','Third Line','Fourth Line','Fifth Line','Sixth Line'][n-1]||'Line Prize '+n;condition='Complete a row on a ticket';}
+ else if(kind==='Full House'){const n=prizesData.filter(p=>/house/i.test(p.name)).length+1;name=n===2?'Second Full House':n===3?'Third Full House':'Full House '+n;condition='All 15 numbers on a ticket';}
  else {name='Custom Prize';condition='Describe the winning pattern';}
- prizesData.push({id:crypto.randomUUID(),name,condition,amount,enabled:true});renderPrizeEditor();calc();
+ const existing=prizesData.find(p=>p.name.toLowerCase()===name.toLowerCase());
+ if(existing){existing.enabled=true;renderPrizeEditor();calc();const row=[...$('prizeEditor').querySelectorAll('.prize-edit-row')].find(el=>el.querySelector('input')?.value===existing.name);if(row){const inputs=row.querySelectorAll('input');if(inputs[2]){inputs[2].focus();inputs[2].select();}}return;}
+ prizesData.push({id:crypto.randomUUID(),name,condition,amount,enabled:true,optional:true});renderPrizeEditor();calc();
  const rows=$('prizeEditor').querySelectorAll('.prize-edit-row');const last=rows[rows.length-1];if(last){const inputs=last.querySelectorAll('input');if(inputs[2]){inputs[2].focus();inputs[2].select();}}
 }
 function renderPrizeEditor(){
@@ -57,7 +65,7 @@ function renderPrizeEditor(){
   const enabledBox=document.createElement('label');enabledBox.className='toggle';enabledBox.style.margin='0';enabledBox.style.alignSelf='end';
   const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=p.enabled;
   checkbox.addEventListener('change',()=>{p.enabled=checkbox.checked;calc()});
-  enabledBox.append(checkbox,document.createTextNode('Active'));row.append(enabledBox);
+  enabledBox.append(checkbox,document.createTextNode(p.optional?'Optional · Active':'Active'));row.append(enabledBox);
   const remove=document.createElement('button');remove.type='button';remove.className='btn secondary remove-prize';remove.textContent='Remove';remove.addEventListener('click',()=>{prizesData=prizesData.filter(x=>x.id!==p.id);renderPrizeEditor();calc()});row.append(remove);
   $('prizeEditor').append(row);
  });
