@@ -66,6 +66,38 @@ body{background:#090d16;color:var(--ink);letter-spacing:-.015em}main{max-width:8
 .note{font-size:11px}
 @media(max-width:540px){main{padding-left:11px;padding-right:11px}.card{padding:14px;border-radius:17px}.hero{padding:18px 12px}.ball{width:102px;height:102px;font-size:43px}.actions .btn{font-size:12px;padding:10px 11px}.board{gap:3px}.n{border-radius:6px}.field-grid{grid-template-columns:1fr 1fr}.budget-row{display:grid;grid-template-columns:1fr 1fr}.budget-row label{min-width:0}.prize-edit-row{grid-template-columns:1fr 1fr}.prize-edit-row .field:first-child,.prize-edit-row .field:nth-child(2){grid-column:1/-1}.prize-edit-row .toggle{grid-column:1}.prize-edit-row .remove-prize{grid-column:2}.moneygrid{grid-template-columns:1fr 1fr}}
 
+/* Crisp gold calling coin: keep the number readable even during the draw animation */
+.hero.drawing .ball{filter:none!important;opacity:1!important;transform:scale(1)!important}
+.hero .ball{
+  position:relative;isolation:isolate;
+  width:clamp(124px,34vw,154px);height:clamp(124px,34vw,154px);
+  margin:14px auto 16px;border-radius:50%;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(ellipse at 30% 20%,#fff9d8 0%,#ffe995 12%,transparent 31%),
+    radial-gradient(circle at 35% 28%,#ffe68a 0%,#f8c542 35%,#d99a19 68%,#9a5c08 100%);
+  border:3px solid #e5ae32;
+  box-shadow:inset 0 0 0 3px #ffdf75,inset 0 0 0 7px #c98212,
+    inset 0 3px 8px #fff9, inset 0 -7px 12px #7d470b66,
+    0 9px 22px #0005,0 0 28px #ffc85720;
+  color:#3b2500;font-size:clamp(48px,13vw,62px);font-weight:850;
+  letter-spacing:-.055em;text-shadow:0 1px 0 #fff1a8;
+  filter:none;opacity:1;transition:transform .2s ease;
+}
+.hero .ball:before{
+  content:"";position:absolute;inset:10px;border-radius:50%;
+  border:1.5px solid #fff0a6b8;box-shadow:inset 0 0 0 2px #a86a1233;
+  pointer-events:none;z-index:-1;
+}
+.hero .ball:after{
+  content:"";position:absolute;left:19%;top:12%;width:34%;height:13%;
+  border-radius:50%;background:#fff9b9;filter:blur(5px);transform:rotate(-25deg);
+  pointer-events:none;z-index:-1;
+}
+.hero .ball.pop{animation:coinPop .28s ease-out}
+@keyframes coinPop{0%{transform:scale(.94)}65%{transform:scale(1.035)}100%{transform:scale(1)}}
+@media(max-width:540px){.hero .ball{width:124px;height:124px;font-size:49px;margin:12px auto 14px}}
+
 </style></head><body><main>
 <header class="top"><div><div class="eyebrow">Game night companion</div><h1>Tambola Housie</h1><p class="subtitle">A little luck. A lot of fun.</p></div><div class="appmark" aria-hidden="true">🎟️</div></header>
 <section class="card hero"><div class="eyebrow">Now calling</div><div class="coin-stage" id="coinStage" aria-hidden="true"><div class="coin-pot"><div class="pot-back"></div><div class="pot-body"></div><span class="pot-coin c1"></span><span class="pot-coin c2"></span><span class="pot-coin c3"></span></div><div class="coin-fly">🪙</div></div><div class="ball" id="current" aria-live="polite">—</div><h2 class="current-title" id="status">Ready when you are</h2><p class="hint" id="hint">Pick a number to start your game.</p><div class="actions"><button class="btn primary" id="pick">↗ Pick next number</button><button class="btn secondary" id="undo">Undo</button><button class="btn secondary" id="reset">New game</button></div><div class="metrics"><div class="metric"><span>NUMBERS CALLED</span><strong id="count">0 / 90</strong></div><div class="metric"><span>NUMBERS LEFT</span><strong id="remaining">90</strong></div></div></section>
