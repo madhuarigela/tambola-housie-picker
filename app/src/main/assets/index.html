@@ -98,6 +98,45 @@ body{background:#090d16;color:var(--ink);letter-spacing:-.015em}main{max-width:8
 @keyframes coinPop{0%{transform:scale(.94)}65%{transform:scale(1.035)}100%{transform:scale(1)}}
 @media(max-width:540px){.hero .ball{width:124px;height:124px;font-size:49px;margin:12px auto 14px}}
 
+
+/* Luxury realistic coin treatment: crisp engraved medallion, not a blurred flat ball */
+.hero.drawing .ball{filter:none!important;opacity:1!important;transform:scale(1)!important}
+.hero .ball{
+ position:relative;isolation:isolate;overflow:hidden;
+ width:clamp(132px,36vw,158px);height:clamp(132px,36vw,158px);
+ margin:12px auto 15px;border-radius:50%;
+ display:grid;place-items:center;
+ background:
+  radial-gradient(ellipse at 29% 17%,#fffde8 0%,#fff2b0 5%,transparent 23%),
+  radial-gradient(circle at 36% 30%,#fff0a0 0%,#e9ad32 28%,#bf7812 53%,#f9d35d 66%,#98600c 78%,#f4c44c 88%,#754508 100%);
+ border:3px solid #e6b84b;
+ box-shadow:inset 0 0 0 2px #fff0a1,inset 0 0 0 5px #9b620e,
+ inset 0 0 0 7px #ffdf73,inset 0 7px 10px #fff8,
+ inset 0 -9px 13px #663b0c8c,0 10px 23px #0008,0 0 35px #ffbd3c30;
+ color:#402700;font-size:clamp(49px,13vw,64px);font-weight:900;
+ letter-spacing:-.06em;text-shadow:0 1px #fff3a4,0 -1px #8c5308;
+ filter:none;opacity:1;transition:transform .22s ease;
+}
+.hero .ball:before{
+ content:"";position:absolute;inset:11px;border-radius:50%;
+ border:2px solid #ffeaa1;
+ box-shadow:0 0 0 2px #8e570d,0 0 0 4px #f8d46a,inset 0 0 0 2px #a46a12;
+ pointer-events:none;z-index:-1;
+}
+.hero .ball:after{
+ content:"";position:absolute;inset:17px;border-radius:50%;
+ border:1px dashed #8e5b14a8;box-shadow:inset 0 0 16px #fff3;
+ pointer-events:none;z-index:-1;
+}
+.coin-stage{height:82px}
+.coin-pot{filter:drop-shadow(0 9px 9px #0008)}
+.pot-back{background:radial-gradient(ellipse at 32% 22%,#fff4bb 0%,#e9b53d 24%,#a5680e 62%,#573506 100%);border-color:#f3c95d;box-shadow:inset 0 2px 3px #fff9,0 2px 4px #0007}
+.pot-body{background:linear-gradient(90deg,#633706 0%,#c98210 10%,#ffe17b 25%,#c78612 43%,#fff0a1 58%,#b8750d 78%,#603607 100%);border-color:#f4c34e;box-shadow:inset 0 5px 8px #fff9,inset 0 -6px 8px #5e370a88,0 4px 8px #0007}
+.pot-coin{background:radial-gradient(circle at 28% 22%,#fff9cc 0%,#ffdf72 20%,#d99a1c 57%,#88510a 82%,#ffe17b 100%);border:2px solid #f3cb59;box-shadow:inset 0 1px 3px #fff9,0 2px 3px #0007}
+.hero{background:radial-gradient(ellipse at 50% 5%,#29203a 0%,#17192b 48%,#101625 100%)}
+.hero .eyebrow{color:#ffdb79}
+@media(max-width:540px){.hero .ball{width:128px;height:128px;font-size:50px}}
+
 </style></head><body><main>
 <header class="top"><div><div class="eyebrow">Game night companion</div><h1>Tambola Housie</h1><p class="subtitle">A little luck. A lot of fun.</p></div><div class="appmark" aria-hidden="true">🎟️</div></header>
 <section class="card hero"><div class="eyebrow">Now calling</div><div class="coin-stage" id="coinStage" aria-hidden="true"><div class="coin-pot"><div class="pot-back"></div><div class="pot-body"></div><span class="pot-coin c1"></span><span class="pot-coin c2"></span><span class="pot-coin c3"></span></div><div class="coin-fly">🪙</div></div><div class="ball" id="current" aria-live="polite">—</div><h2 class="current-title" id="status">Ready when you are</h2><p class="hint" id="hint">Pick a number to start your game.</p><div class="actions"><button class="btn primary" id="pick">↗ Pick next number</button><button class="btn secondary" id="undo">Undo</button><button class="btn secondary" id="reset">New game</button></div><div class="metrics"><div class="metric"><span>NUMBERS CALLED</span><strong id="count">0 / 90</strong></div><div class="metric"><span>NUMBERS LEFT</span><strong id="remaining">90</strong></div></div></section>
